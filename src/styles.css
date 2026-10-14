@@ -57,6 +57,27 @@
   border-radius: 2px;
   box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
   pointer-events: auto;
+  /* 拡大縮小・移動は transform で行う（ドラッグ中にページ側の処理が走らないようにする） */
+  touch-action: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  will-change: transform;
+  /* ホイールやダブルクリックでの拡大縮小を滑らかにする */
+  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* 拡大中はドラッグで移動できることを示す */
+.alb-full-img--zoomed {
+  cursor: grab;
+}
+
+.alb-full-img--zoomed:active {
+  cursor: grabbing;
+}
+
+/* ドラッグ中はカーソルに遅れず追従させる */
+.alb-full-img--dragging {
+  transition: none;
 }
 
 @keyframes alb-fade-in {
@@ -67,4 +88,5 @@
 @media (prefers-reduced-motion: reduce) {
   .alb-overlay { animation: none; }
   .alb-thumb-img { transition: none; }
+  .alb-full-img { transition: none; }
 }
