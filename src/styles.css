@@ -81,7 +81,7 @@
   touch-action: none;
   user-select: none;
   -webkit-user-drag: none;
-  /*will-change: transform; 画質が悪く表示されたので未使用
+  /* will-change: transform は付けない（拡大時に縮小表示のままの画像が引き伸ばされ、画質が落ちるため） */
   /* ホイールやダブルクリックでの拡大縮小を滑らかにする */
   transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -137,6 +137,29 @@
 
 .alb-caption-title + .alb-caption-description {
   margin-top: 0.375rem;
+}
+
+/* 背景色（status）。作品の色を正しく見せるため、ほぼ不透明の単色にする */
+.alb-overlay--black {
+  background-color: rgb(0 0 0 / 0.95);
+}
+
+.alb-overlay--white {
+  background-color: rgb(255 255 255 / 0.95);
+}
+
+/* 白背景では、キャプションと影を暗い背景向けから切り替える */
+.alb-overlay--white .alb-caption {
+  color: #1a1a1a;
+  text-shadow: none;
+}
+
+.alb-overlay--white .alb-caption-description {
+  color: rgb(0 0 0 / 0.65);
+}
+
+.alb-overlay--white .alb-full-img {
+  box-shadow: 0 20px 40px -16px rgb(0 0 0 / 0.3);
 }
 
 @keyframes alb-fade-in {

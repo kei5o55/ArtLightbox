@@ -6,6 +6,7 @@
 - クリックすると、背景をぼかしたモーダルで画像全体を表示します
 - 拡大表示中は、ホイールで拡大縮小、ドラッグで表示位置を移動できます
 - `title` / `description` を渡すと、拡大表示時に画像の下へキャプションを表示します
+- `status="white"` / `status="black"` で、拡大表示時の背景色を切り替えられます
 - モーダルはクリックすると閉じます
 - モーダルは `createPortal` で `document.body` の直下に描画するので、親要素の `overflow` や `z-index` の影響を受けません
 - SSR に対応しています（Next.js の App Router でも使えます）
@@ -50,7 +51,17 @@ export default function Gallery() {
 | `title` | `string` | | 拡大表示時に画像の下に表示するタイトル |
 | `description` | `string` | | タイトルの下に表示する説明文（改行 `\n` はそのまま改行として表示） |
 
+| `status` | `"white" \| "black"` | | 拡大表示時の背景色（下記） |
+
 `title` と `description` のどちらも指定しない場合、キャプションは表示されません。
+
+### 背景色（`status`）
+
+| 値 | 背景 |
+|---|---|
+| 指定なし | 半透明の黒＋背後のページをぼかす |
+| `"black"` | ほぼ不透明の黒（作品の色を正しく見せたいとき向け） |
+| `"white"` | ほぼ不透明の白（キャプションは黒文字になる） |
 
 ### モーダル内の操作
 
@@ -76,6 +87,7 @@ export default function Gallery() {
 | `.alb-thumb` | サムネイルの外枠 |
 | `.alb-thumb-img` | サムネイル画像 |
 | `.alb-overlay` | モーダルの背景（全画面） |
+| `.alb-overlay--white` / `.alb-overlay--black` | 背景色を指定したモーダル |
 | `.alb-overlay--closing` | 閉じるアニメーション中のモーダル |
 | `.alb-frame` | モーダル内で画像を配置する枠 |
 | `.alb-full-img` | 拡大表示される画像 |

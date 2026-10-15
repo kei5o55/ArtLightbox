@@ -40,6 +40,9 @@ const clampView = (view: View, img: HTMLImageElement): View => {
   };
 };
 
+/** 拡大表示時の背景色。指定しない場合は半透明の黒＋ぼかし */
+export type ArtLightboxStatus = "white" | "black";
+
 export type ArtLightboxProps = {
   src: string;
   alt: string;
@@ -47,9 +50,11 @@ export type ArtLightboxProps = {
   title?: string;
   /** 拡大表示時にタイトルの下に表示する説明文 */
   description?: string;
+  /** 拡大表示時の背景色（"white" | "black"） */
+  status?: ArtLightboxStatus;
 };
 
-export default function ArtLightbox({ src, alt, title, description }: ArtLightboxProps) {
+export default function ArtLightbox({ src, alt, title, description, status }: ArtLightboxProps) {
   const [phase, setPhase] = useState<Phase>("closed");
   const [view, setView] = useState<View>(INITIAL_VIEW);
   const [dragging, setDragging] = useState(false);
@@ -143,7 +148,11 @@ export default function ArtLightbox({ src, alt, title, description }: ArtLightbo
             // 子要素のアニメーション終了もバブリングしてくるので、オーバーレイ自身のものだけを見る
             if (phase === "closing" && e.target === e.currentTarget) finishClose();
           }}
-          className={["alb-overlay", phase === "closing" && "alb-overlay--closing"].filter(Boolean).join(" ")}
+          className={[
+            "alb-overlay",
+            status && `alb-overlay--${status}`,
+            phase === "closing" && "alb-overlay--closing",
+          ].filter(Boolean).join(" ")}
         >
           <div ref={frameRef} className="alb-frame">
             <img
