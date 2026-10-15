@@ -98,6 +98,7 @@
 /* ドラッグ中はカーソルに遅れず追従させる */
 .alb-full-img--dragging {
   transition: none;
+  will-change: transform
 }
 
 /* キャプション（タイトル＋説明文） */
@@ -142,10 +143,12 @@
 /* 背景色（status）。作品の色を正しく見せるため、ほぼ不透明の単色にする */
 .alb-overlay--black {
   background-color: rgb(0 0 0 / 0.95);
+  backdrop-filter: none
 }
 
 .alb-overlay--white {
   background-color: rgb(255 255 255 / 0.95);
+  backdrop-filter: none
 }
 
 /* 白背景では、キャプションと影を暗い背景向けから切り替える */
