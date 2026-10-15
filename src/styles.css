@@ -81,7 +81,7 @@
   touch-action: none;
   user-select: none;
   -webkit-user-drag: none;
-  will-change: transform;
+  /*will-change: transform; 画質が悪く表示されたので未使用
   /* ホイールやダブルクリックでの拡大縮小を滑らかにする */
   transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
 }

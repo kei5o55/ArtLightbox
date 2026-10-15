@@ -1,11 +1,15 @@
 import { createRoot } from "react-dom/client";
 import { ArtLightbox } from "../src";
 import "../src/styles.css";
+// import すると Vite が配信用の URL に変換してくれる
+import imageA from "../assets/a.png";
+import imageB from "../assets/b.png";
+import imageC from "../assets/c.png";
 
 const images = [
-  { src: "https://picsum.photos/id/1015/1600/1000", title: "川の流れる谷", description: "タイトルと説明文を表示する例です。\n説明文は改行もそのまま表示されます。" },
-  { src: "https://picsum.photos/id/1025/1000/1400", title: "パグ" },
-  { src: "https://picsum.photos/id/1043/1600/1000" },
+  { src: imageA, title: "作品 A", description: "タイトルと説明文を表示する例です。\n説明文は改行もそのまま表示されます。" },
+  { src: imageB, title: "作品 B" },
+  { src: imageC },
 ];
 
 createRoot(document.getElementById("root")!).render(
