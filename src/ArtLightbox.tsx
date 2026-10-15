@@ -45,16 +45,18 @@ export type ArtLightboxStatus = "white" | "black";
 
 export type ArtLightboxProps = {
   src: string;
-  alt: string;
-  /** 拡大表示時に画像の下に表示するタイトル */
-  title?: string;
+  /** 画像の代替テキスト（alt）。拡大表示時には画像の下にタイトルとしても表示する */
+  title: string;
+  /** false にすると、拡大表示時にタイトルを表示しない（代替テキストとしては使われる）。既定値は true */
+  showTitle?: boolean;
   /** 拡大表示時にタイトルの下に表示する説明文 */
   description?: string;
   /** 拡大表示時の背景色（"white" | "black"） */
   status?: ArtLightboxStatus;
 };
 
-export default function ArtLightbox({ src, alt, title, description, status }: ArtLightboxProps) {
+export default function ArtLightbox({ src, title, showTitle = true, description, status }: ArtLightboxProps) {
+  const captionTitle = showTitle ? title : undefined;
   const [phase, setPhase] = useState<Phase>("closed");
   const [view, setView] = useState<View>(INITIAL_VIEW);
   const [dragging, setDragging] = useState(false);
@@ -136,7 +138,7 @@ export default function ArtLightbox({ src, alt, title, description, status }: Ar
     <>
       {/* 1. サムネイル表示部分（親要素枠にピッタリ収まる） */}
       <div onClick={open} className="alb-thumb">
-        <img src={src} alt={alt} className="alb-thumb-img" />
+        <img src={src} alt={title} className="alb-thumb-img" />
       </div>
 
       {/* 2. モーダル表示部分（createPortal で document.body 直下に展開） */}
@@ -158,7 +160,7 @@ export default function ArtLightbox({ src, alt, title, description, status }: Ar
             <img
               ref={imgRef}
               src={src}
-              alt={alt}
+              alt={title}
               draggable={false}
               className={[
                 "alb-full-img",
@@ -200,10 +202,10 @@ export default function ArtLightbox({ src, alt, title, description, status }: Ar
               }}
             />
           </div>
-          {(title || description) && (
+          {(captionTitle || description) && (
             // キャプションのクリックでは閉じない（テキストを選択できるようにする）
             <div className="alb-caption" onClick={(e) => e.stopPropagation()}>
-              {title && <p className="alb-caption-title">{title}</p>}
+              {captionTitle && <p className="alb-caption-title">{captionTitle}</p>}
               {description && <p className="alb-caption-description">{description}</p>}
             </div>
           )}

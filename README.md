@@ -5,7 +5,7 @@
 - サムネイルは親要素の枠いっぱいに収まります
 - クリックすると、背景をぼかしたモーダルで画像全体を表示します
 - 拡大表示中は、ホイールで拡大縮小、ドラッグで表示位置を移動できます
-- `title` / `description` を渡すと、拡大表示時に画像の下へキャプションを表示します
+- `title` は画像の代替テキストとして使い、拡大表示時には画像の下にキャプションとしても表示します（`showTitle={false}` で非表示）。`description` を渡すと説明文も表示します
 - `status="white"` / `status="black"` で、拡大表示時の背景色を切り替えられます
 - モーダルはクリックすると閉じます
 - モーダルは `createPortal` で `document.body` の直下に描画するので、親要素の `overflow` や `z-index` の影響を受けません
@@ -31,7 +31,6 @@ export default function Gallery() {
     <div style={{ width: 240, height: 180 }}>
       <ArtLightbox
         src="/images/artwork.jpg"
-        alt="作品タイトル"
         title="作品タイトル"
         description="2024年 / 油彩・キャンバス"
       />
@@ -47,13 +46,12 @@ export default function Gallery() {
 | Prop | 型 | 必須 | 説明 |
 |---|---|---|---|
 | `src` | `string` | ✓ | 画像の URL |
-| `alt` | `string` | ✓ | 画像の代替テキスト |
-| `title` | `string` | | 拡大表示時に画像の下に表示するタイトル |
+| `title` | `string` | ✓ | 画像の代替テキストおよび拡大表示時に画像の下に表示するタイトル |
+| `showTitle` | `boolean` | | `false` にすると拡大表示時にタイトルを表示しない（代替テキストには使われる）。既定値は `true` |
 | `description` | `string` | | タイトルの下に表示する説明文（改行 `\n` はそのまま改行として表示） |
-
 | `status` | `"white" \| "black"` | | 拡大表示時の背景色（下記） |
 
-`title` と `description` のどちらも指定しない場合、キャプションは表示されません。
+`showTitle={false}` で `description` も指定しない場合、キャプションは表示されません。
 
 ### 背景色（`status`）
 
@@ -62,6 +60,7 @@ export default function Gallery() {
 | 指定なし | 半透明の黒＋背後のページをぼかす |
 | `"black"` | ほぼ不透明の黒（作品の色を正しく見せたいとき向け） |
 | `"white"` | ほぼ不透明の白（キャプションは黒文字になる） |
+
 
 ### モーダル内の操作
 
