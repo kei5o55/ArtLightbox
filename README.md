@@ -5,6 +5,7 @@
 - サムネイルは親要素の枠いっぱいに収まります
 - クリックすると、背景をぼかしたモーダルで画像全体を表示します
 - 拡大表示中は、ホイールで拡大縮小、ドラッグで表示位置を移動できます
+- `title` / `description` を渡すと、拡大表示時に画像の下へキャプションを表示します
 - モーダルはクリックすると閉じます
 - モーダルは `createPortal` で `document.body` の直下に描画するので、親要素の `overflow` や `z-index` の影響を受けません
 - SSR に対応しています（Next.js の App Router でも使えます）
@@ -27,7 +28,12 @@ import "artlightbox/styles.css";
 export default function Gallery() {
   return (
     <div style={{ width: 240, height: 180 }}>
-      <ArtLightbox src="/images/artwork.jpg" alt="作品タイトル" />
+      <ArtLightbox
+        src="/images/artwork.jpg"
+        alt="作品タイトル"
+        title="作品タイトル"
+        description="2024年 / 油彩・キャンバス"
+      />
     </div>
   );
 }
@@ -41,6 +47,10 @@ export default function Gallery() {
 |---|---|---|---|
 | `src` | `string` | ✓ | 画像の URL |
 | `alt` | `string` | ✓ | 画像の代替テキスト |
+| `title` | `string` | | 拡大表示時に画像の下に表示するタイトル |
+| `description` | `string` | | タイトルの下に表示する説明文（改行 `\n` はそのまま改行として表示） |
+
+`title` と `description` のどちらも指定しない場合、キャプションは表示されません。
 
 ### モーダル内の操作
 
@@ -49,9 +59,11 @@ export default function Gallery() {
 | ホイール | カーソル位置を中心に拡大・縮小（1〜8倍） |
 | ドラッグ | 拡大中の表示位置を移動 |
 | 画像をダブルクリック | 元のサイズに戻す |
-| クリック（ドラッグなし） | 閉じる |
+| クリック（ドラッグなし） | 閉じる（キャプション部分のクリックでは閉じない） |
 
-拡大縮小は 180ms のアニメーションで滑らかに変化します（OS で「視差効果を減らす」などの動きを減らす設定をしている場合は無効）。
+モーダルは、開くときに背景がフェードインしながら画像が少し小さい状態から拡大し、キャプションが下からせり上がって表示されます。閉じるときはフェードアウトしながら少し縮んで消えます。閉じるアニメーションの間は操作を受け付けず、拡大率と表示位置は閉じきってから元に戻ります。
+
+拡大縮小は 180ms のアニメーションで滑らかに変化します。OS で「視差効果を減らす」などの動きを減らす設定をしている場合、拡大縮小のアニメーションは無効になり、開閉はフェードだけになります。
 
 画像のクリックで閉じるときは、ダブルクリックと区別するために 250ms 待ってから閉じます。背景のクリックはすぐに閉じます。
 
@@ -64,8 +76,12 @@ export default function Gallery() {
 | `.alb-thumb` | サムネイルの外枠 |
 | `.alb-thumb-img` | サムネイル画像 |
 | `.alb-overlay` | モーダルの背景（全画面） |
+| `.alb-overlay--closing` | 閉じるアニメーション中のモーダル |
 | `.alb-frame` | モーダル内で画像を配置する枠 |
 | `.alb-full-img` | 拡大表示される画像 |
+| `.alb-caption` | 画像の下のキャプション（タイトル＋説明文） |
+| `.alb-caption-title` | キャプションのタイトル |
+| `.alb-caption-description` | キャプションの説明文 |
 | `.alb-full-img--zoomed` | 拡大中の画像（カーソルが grab になる） |
 | `.alb-full-img--dragging` | ドラッグ中の画像（追従を優先するため transition を無効化） |
 

@@ -28,14 +28,26 @@
   inset: 0;
   z-index: 9999;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 1rem;
   padding: 1.5rem;
   background-color: rgb(0 0 0 / 0.7);
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   cursor: zoom-out;
-  animation: alb-fade-in 150ms ease-out;
+  animation: alb-fade-in 200ms ease-out both;
+}
+
+/* 閉じるアニメーション中は操作を受け付けない（画像・キャプションも含めて） */
+.alb-overlay--closing {
+  animation: alb-fade-out 180ms ease-in both;
+}
+
+.alb-overlay--closing,
+.alb-overlay--closing * {
+  pointer-events: none !important;
 }
 
 .alb-frame {
@@ -43,11 +55,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  /* キャプションがあるときは、その分だけ枠を縮める */
+  flex: 1 1 auto;
+  min-height: 0;
   width: 100%;
-  height: 100%;
   max-width: 64rem;
   max-height: 90vh;
   pointer-events: none;
+  /* 画像の transform は拡大縮小に使っているので、開閉の動きは枠の方に付ける */
+  animation: alb-zoom-in 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.alb-overlay--closing .alb-frame {
+  animation: alb-zoom-out 180ms ease-in both;
 }
 
 .alb-full-img {
@@ -80,13 +100,76 @@
   transition: none;
 }
 
+/* キャプション（タイトル＋説明文） */
+.alb-caption {
+  position: relative;
+  z-index: 1; /* 拡大した画像より手前に表示する */
+  flex: 0 0 auto;
+  width: 100%;
+  max-width: 48rem;
+  max-height: 30vh;
+  overflow-y: auto;
+  color: #fff;
+  text-align: center;
+  text-shadow: 0 1px 4px rgb(0 0 0 / 0.6);
+  cursor: auto;
+  animation: alb-rise-in 280ms 60ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.alb-overlay--closing .alb-caption {
+  animation: alb-fade-out 120ms ease-in both;
+}
+
+.alb-caption-title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.alb-caption-description {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.7;
+  color: rgb(255 255 255 / 0.8);
+  white-space: pre-line;
+}
+
+.alb-caption-title + .alb-caption-description {
+  margin-top: 0.375rem;
+}
+
 @keyframes alb-fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
+@keyframes alb-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes alb-zoom-in {
+  from { opacity: 0; transform: scale(0.94); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes alb-zoom-out {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(0.96); }
+}
+
+@keyframes alb-rise-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 動きを減らす設定では、拡大・移動の動きはやめてフェードだけにする */
 @media (prefers-reduced-motion: reduce) {
-  .alb-overlay { animation: none; }
+  .alb-frame,
+  .alb-caption { animation-name: alb-fade-in; }
+  .alb-overlay--closing .alb-frame,
+  .alb-overlay--closing .alb-caption { animation-name: alb-fade-out; }
   .alb-thumb-img { transition: none; }
   .alb-full-img { transition: none; }
 }
