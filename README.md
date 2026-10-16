@@ -5,9 +5,16 @@
 - サムネイルは親要素の枠いっぱいに収まります
 - クリックすると、背景をぼかしたモーダルで画像全体を表示します
 - 拡大表示中は、ホイールで拡大縮小、ドラッグで表示位置を移動できます
+<<<<<<< HEAD
 - 拡大表示時には画像の下にキャプションを表示します（`showTitle={false}` で非表示）
 - 拡大表示時の背景色を切り替えられます
 - モーダルはクリックすると閉じ、ダブルクリックでは拡大状況が初期の全体表示へ戻ります
+=======
+- `title` は画像の代替テキストとして使い、拡大表示時には画像の下にキャプションとしても表示します（`showTitle={false}` で非表示）。`description` を渡すと説明文も表示します
+- `status="white"` / `status="black"` で、拡大表示時の背景色を切り替えられます
+- `mat` / `frame` で、拡大表示時に画像の周りにマット（台紙）や額縁を付けられます
+- モーダルはクリックすると閉じます
+>>>>>>> 7cef201 (feat: mat・frameの指定実装（prototype))
 - モーダルは `createPortal` で `document.body` の直下に描画するので、親要素の `overflow` や `z-index` の影響を受けません
 - SSR に対応しています（Next.js の App Router でも使えます）
 - Tailwind CSS がなくても使えます（CSS を同梱しています）
@@ -66,6 +73,8 @@ export default function Gallery() {
 | `showTitle` | `boolean` | | `false` にすると拡大表示時にタイトルを表示しない（代替テキストには使われる）。既定値は `true` |
 | `description` | `string` | | タイトルの下に表示する説明文（改行 `\n` はそのまま改行として表示） |
 | `status` | `"white" \| "black"` | | 拡大表示時の背景色（下記） |
+| `mat` | `boolean` | | `true` にすると拡大表示時に画像の周りにマット（台紙）を表示する。既定値は `false` |
+| `frame` | `boolean` | | `true` にすると拡大表示時に額縁（フレーム）を表示する。既定値は `false` |
 
 `showTitle={false}` で `description` も指定しない場合、キャプションは表示されません。
 
@@ -77,6 +86,24 @@ export default function Gallery() {
 | `"black"` | ほぼ不透明の黒（作品の色を正しく見せたいとき向け） |
 | `"white"` | ほぼ不透明の白（キャプションは黒文字になる） |
 
+### マットとフレーム（`mat` / `frame`）
+
+```tsx
+<ArtLightbox src="/images/artwork.jpg" title="作品タイトル" mat frame />
+```
+
+`mat` と `frame` は別々に指定でき、両方指定すると「額縁 → マット → 画像」の順に重なります。サムネイルには付かず、拡大表示時だけ表示されます。ホイールやドラッグで拡大・移動するときは、マットとフレームも画像と一緒に動きます。
+
+色と太さは CSS 変数で変えられます。
+
+```css
+.alb-artwork {
+  --alb-mat-color: #fffdf8;   /* マットの色 */
+  --alb-frame-color: #6b4a2b; /* 額縁の色（上辺は明るく、下辺は暗く自動で調整） */
+}
+.alb-artwork--matted { --alb-mat-width: 40px; }  /* マットの幅（既定は画面サイズに応じて 12〜56px） */
+.alb-artwork--framed { --alb-frame-width: 16px; } /* 額縁の太さ（既定は画面サイズに応じて 6〜20px） */
+```
 
 ### モーダル内の操作
 
@@ -105,12 +132,14 @@ export default function Gallery() {
 | `.alb-overlay--white` / `.alb-overlay--black` | 背景色を指定したモーダル |
 | `.alb-overlay--closing` | 閉じるアニメーション中のモーダル |
 | `.alb-frame` | モーダル内で画像を配置する枠 |
+| `.alb-artwork` | 拡大表示される画像＋マット＋フレームのまとまり（拡大縮小・移動の対象） |
+| `.alb-artwork--matted` / `.alb-artwork--framed` | マット / フレームを表示しているとき |
 | `.alb-full-img` | 拡大表示される画像 |
 | `.alb-caption` | 画像の下のキャプション（タイトル＋説明文） |
 | `.alb-caption-title` | キャプションのタイトル |
 | `.alb-caption-description` | キャプションの説明文 |
-| `.alb-full-img--zoomed` | 拡大中の画像（カーソルが grab になる） |
-| `.alb-full-img--dragging` | ドラッグ中の画像（追従を優先するため transition を無効化） |
+| `.alb-artwork--zoomed` | 拡大中（カーソルが grab になる） |
+| `.alb-artwork--dragging` | ドラッグ中（追従を優先するため transition を無効化） |
 
 ## 開発
 

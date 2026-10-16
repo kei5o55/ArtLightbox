@@ -30,9 +30,9 @@ const clamp = (value: number, min: number, max: number) =>
   Math.min(Math.max(value, min), max);
 
 // 拡大後の画像が元の表示領域より内側に入り込まないよう、移動量を制限する
-const clampView = (view: View, img: HTMLImageElement): View => {
-  const maxX = (img.offsetWidth * (view.scale - 1)) / 2;
-  const maxY = (img.offsetHeight * (view.scale - 1)) / 2;
+const clampView = (view: View, el: HTMLElement): View => {
+  const maxX = (el.offsetWidth * (view.scale - 1)) / 2;
+  const maxY = (el.offsetHeight * (view.scale - 1)) / 2;
   return {
     scale: view.scale,
     x: clamp(view.x, -maxX, maxX),
@@ -53,9 +53,13 @@ export type ArtLightboxProps = {
   description?: string;
   /** 拡大表示時の背景色（"white" | "black"） */
   status?: ArtLightboxStatus;
+  /** true にすると、拡大表示時に画像の外側に額縁（フレーム）を表示する。既定値は false */
+  frame?: boolean;
+  /** true にすると、拡大表示時に画像の周りにマット（余白の台紙）を表示する。既定値は false */
+  mat?: boolean;
 };
 
-export default function ArtLightbox({ src, title, showTitle = true, description, status }: ArtLightboxProps) {
+export default function ArtLightbox({ src, title, showTitle = true, description, status, frame = false, mat = false }: ArtLightboxProps) {
   const captionTitle = showTitle ? title : undefined;
   const [phase, setPhase] = useState<Phase>("closed");
   const [view, setView] = useState<View>(INITIAL_VIEW);
@@ -64,7 +68,8 @@ export default function ArtLightbox({ src, title, showTitle = true, description,
 
   const overlayRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
-  const imgRef = useRef<HTMLImageElement>(null);
+  // 拡大縮小・移動の対象（画像＋マット＋フレームをまとめた要素）
+  const artworkRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<{ id: number; startX: number; startY: number; originX: number; originY: number } | null>(null);
   const movedRef = useRef(false);
   const closeTimerRef = useRef<number | undefined>(undefined);
@@ -108,8 +113,8 @@ export default function ArtLightbox({ src, title, showTitle = true, description,
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
       const frame = frameRef.current;
-      const img = imgRef.current;
-      if (!frame || !img) return;
+      const artwork = artworkRef.current;
+      if (!frame || !artwork) return;
 
       // 画像は枠の中央に配置されているので、枠の中心を基準にカーソル位置を求める
       const rect = frame.getBoundingClientRect();
@@ -120,7 +125,7 @@ export default function ArtLightbox({ src, title, showTitle = true, description,
       setView((v) => {
         const scale = clamp(v.scale * Math.exp(-delta * WHEEL_SENSITIVITY), MIN_SCALE, MAX_SCALE);
         const ratio = scale / v.scale;
-        return clampView({ scale, x: px - (px - v.x) * ratio, y: py - (py - v.y) * ratio }, img);
+        return clampView({ scale, x: px - (px - v.x) * ratio, y: py - (py - v.y) * ratio }, artwork);
       });
     };
 
@@ -128,7 +133,7 @@ export default function ArtLightbox({ src, title, showTitle = true, description,
     return () => overlay.removeEventListener("wheel", onWheel);
   }, [rendered, isMounted]);
 
-  const endDrag = (e: PointerEvent<HTMLImageElement>) => {
+  const endDrag = (e: PointerEvent<HTMLDivElement>) => {
     if (dragRef.current?.id !== e.pointerId) return;
     dragRef.current = null;
     setDragging(false);
@@ -157,15 +162,15 @@ export default function ArtLightbox({ src, title, showTitle = true, description,
           ].filter(Boolean).join(" ")}
         >
           <div ref={frameRef} className="alb-frame">
-            <img
-              ref={imgRef}
-              src={src}
-              alt={title}
-              draggable={false}
+            {/* マットとフレームは画像と一緒に拡大縮小・移動させるため、まとめて transform をかける */}
+            <div
+              ref={artworkRef}
               className={[
-                "alb-full-img",
-                view.scale > 1 && "alb-full-img--zoomed",
-                dragging && "alb-full-img--dragging",
+                "alb-artwork",
+                mat && "alb-artwork--matted",
+                frame && "alb-artwork--framed",
+                view.scale > 1 && "alb-artwork--zoomed",
+                dragging && "alb-artwork--dragging",
               ].filter(Boolean).join(" ")}
               style={{ transform: `translate(${view.x}px, ${view.y}px) scale(${view.scale})` }}
               onPointerDown={(e) => {
@@ -184,8 +189,8 @@ export default function ArtLightbox({ src, title, showTitle = true, description,
                   movedRef.current = true;
                   setDragging(true);
                 }
-                const img = e.currentTarget;
-                setView((v) => clampView({ ...v, x: drag.originX + dx, y: drag.originY + dy }, img));
+                const artwork = e.currentTarget;
+                setView((v) => clampView({ ...v, x: drag.originX + dx, y: drag.originY + dy }, artwork));
               }}
               onPointerUp={endDrag}
               onPointerCancel={endDrag}
@@ -200,7 +205,9 @@ export default function ArtLightbox({ src, title, showTitle = true, description,
                 window.clearTimeout(closeTimerRef.current);
                 setView(INITIAL_VIEW);
               }}
-            />
+            >
+              <img src={src} alt={title} draggable={false} className="alb-full-img" />
+            </div>
           </div>
           {(captionTitle || description) && (
             // キャプションのクリックでは閉じない（テキストを選択できるようにする）

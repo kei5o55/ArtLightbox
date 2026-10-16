@@ -62,6 +62,8 @@
   max-width: 64rem;
   max-height: 90vh;
   pointer-events: none;
+  /* 画像の最大サイズを枠の大きさ（cqw / cqh）から求めるため、サイズのコンテナにする */
+  container-type: size;
   /* 画像の transform は拡大縮小に使っているので、開閉の動きは枠の方に付ける */
   animation: alb-zoom-in 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
@@ -70,33 +72,81 @@
   animation: alb-zoom-out 180ms ease-in both;
 }
 
-.alb-full-img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
+/* 拡大縮小・移動の対象（画像＋マット＋フレーム） */
+.alb-artwork {
+  /* マットとフレームの幅。表示しないときは 0 */
+  --alb-mat-width: 0px;
+  --alb-frame-width: 0px;
+  --alb-mat-color: #f6f4ef;
+  --alb-frame-color: #2a2420;
+
+  display: flex;
+  box-sizing: content-box;
+  padding: var(--alb-mat-width);
+  border: var(--alb-frame-width) solid transparent;
   border-radius: 2px;
   box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
   pointer-events: auto;
   /* 拡大縮小・移動は transform で行う（ドラッグ中にページ側の処理が走らないようにする） */
   touch-action: none;
   user-select: none;
-  -webkit-user-drag: none;
   /* will-change: transform は付けない（拡大時に縮小表示のままの画像が引き伸ばされ、画質が落ちるため） */
   /* ホイールやダブルクリックでの拡大縮小を滑らかにする */
   transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+.alb-full-img {
+  display: block;
+  /* マットとフレームの分を差し引いて、枠に収まる大きさにする */
+  max-width: 100%;
+  max-width: calc(100cqw - 2 * (var(--alb-mat-width) + var(--alb-frame-width)));
+  max-height: calc(100cqh - 2 * (var(--alb-mat-width) + var(--alb-frame-width)));
+  object-fit: contain;
+  border-radius: 2px;
+  -webkit-user-drag: none;
+}
+
+/* マット（画像の周りの台紙） */
+.alb-artwork--matted {
+  --alb-mat-width: clamp(12px, 5vmin, 56px);
+  background-color: var(--alb-mat-color);
+}
+
+/* マットの窓（画像の切り抜き部分）の縁 */
+.alb-artwork--matted .alb-full-img {
+  border-radius: 0;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.12), 0 1px 3px rgb(0 0 0 / 0.18);
+}
+
+/* フレーム（額縁）。上を明るく、下を暗くして立体感を出す */
+.alb-artwork--framed {
+  --alb-frame-width: clamp(6px, 1.6vmin, 20px);
+  border-radius: 0;
+  border-color:
+    color-mix(in srgb, var(--alb-frame-color), #fff 14%)
+    var(--alb-frame-color)
+    color-mix(in srgb, var(--alb-frame-color), #000 30%);
+  /* 内側の影はフレームがマット（または画像）に落とす影 */
+  box-shadow:
+    inset 0 2px 6px rgb(0 0 0 / 0.35),
+    0 30px 60px -12px rgb(0 0 0 / 0.45);
+}
+
+.alb-artwork--framed .alb-full-img {
+  border-radius: 0;
+}
+
 /* 拡大中はドラッグで移動できることを示す */
-.alb-full-img--zoomed {
+.alb-artwork--zoomed {
   cursor: grab;
 }
 
-.alb-full-img--zoomed:active {
+.alb-artwork--zoomed:active {
   cursor: grabbing;
 }
 
 /* ドラッグ中はカーソルに遅れず追従させる */
-.alb-full-img--dragging {
+.alb-artwork--dragging {
   transition: none;
   will-change: transform
 }
@@ -161,7 +211,7 @@
   color: rgb(0 0 0 / 0.65);
 }
 
-.alb-overlay--white .alb-full-img {
+.alb-overlay--white .alb-artwork:not(.alb-artwork--framed) {
   box-shadow: 0 20px 40px -16px rgb(0 0 0 / 0.3);
 }
 
@@ -197,5 +247,5 @@
   .alb-overlay--closing .alb-frame,
   .alb-overlay--closing .alb-caption { animation-name: alb-fade-out; }
   .alb-thumb-img { transition: none; }
-  .alb-full-img { transition: none; }
+  .alb-artwork { transition: none; }
 }
